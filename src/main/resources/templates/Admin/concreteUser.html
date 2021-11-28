@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
+    <th:block th:include="general.html :: headerfiles"></th:block>
+    <title>Concrete user</title>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+<body>
+<div class="section">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-xs-12">
+                <a href="/" id="plate" style="font-size: 27px;">Автосалон Credo</a>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="border-radius: 10px; border-top: 2px solid black; border-bottom: 2px solid black; border-left: 2px solid black; border-right: 2px solid black;">
+        <div class="row text-center">
+            <div class="col-xs-3" style="border-right: 2px solid black;">
+                <a href="/" style="font-size: 25px; color: orangered;">Главная страница</a>
+            </div>
+            <div class="col-xs-3" style="border-right: 2px solid black;">
+                <a href="/catalog" style="font-size: 25px; color: orangered;">Каталог</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="!isAuthenticated()" style="border-right: 2px solid black;">
+                <a href="/login" style="font-size: 25px; color: orangered;">Войти</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="!isAuthenticated()">
+                <a href="/registration" style="font-size: 25px; color: orangered;">Зарегистрироваться</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="isAuthenticated()" style="border-right: 2px solid black;">
+                <a href="/account" style="font-size: 25px; color: orangered;">Личный кабинет</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="isAuthenticated()">
+                <a href="/logout" style="font-size: 25px; color: orangered;">Выйти</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-xs-6 col-xs-offset-3 dashboard_rules" sec:authorize="hasRole('ADMIN')" style="border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-bottom: 2px solid black; border-left: 2px solid black; border-right: 2px solid black;">
+                <a href="/admin" style="font-size: 25px; color: orangered; text-decoration: underline;">Окно администратора</a>
+            </div>
+        </div>
+    </div>
+    <div class="container" id="app" style="margin-top: 1.5%; border-radius: 10px; border-top: 2px solid black; border-bottom: 2px solid black; border-left: 2px solid black; border-right: 2px solid black;">
+        <div class="col-xs-12">
+            <h4 class="text-center" style="text-decoration: underline; ">Изменение пользователя</h4>
+            <h5 v-if="editStatusResponse != null">{{editStatus}}</h5>
+            <table class="table">
+                <thead>
+                <th scope="col">ID</th>
+                <th scope="col">UserName</th>
+                <th scope="col">Roles</th>
+                <th scope="col">Edit Button</th>
+                </thead>
+                <tr>
+                    <td>{{user.id}}</td>
+                    <td>
+                        <label>
+                            <input type="text" v-model="username" name="username" :placeholder="user.username" />
+                        </label>
+                    </td>
+                    <td>
+                        <label>
+                            <input type="checkbox" v-model="role_user" value="true" :checked="role_user" name="ROLE_USER"/>ROLE_USER
+                        </label>
+                        <label>
+                            <input type="checkbox" v-model="role_admin" value="true" :checked="role_admin" name="ROLE_ADMIN"/>ROLE_ADMIN
+                        </label>
+                    </td>
+                    <td>
+                        <form v-on:submit.prevent="editUser">
+                            <input type="submit" class="btn btn-warning editUser" value="Edit"/>
+                        </form>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    window.app = new Vue({
+        el: '#app',
+        data: {
+            editStatus:'',
+            username:'',
+            editStatusResponse:null,
+            id: window.location.href.split("/").slice(-1)[0],
+            role_user:false,
+            role_admin:false,
+            user: null
+        },
+        async mounted(){
+            await this.getUser()
+        },
+        methods: {
+            getUser: function (event){
+                axios.get(`/admin/user/${this.id}`)
+                    .then(response=>{
+                        this.user = response.data
+                        for (let i=0; i<this.user.roles.length;++i) {
+                            if (this.user.roles[i] === 'ROLE_USER') this.role_user = true
+                            if (this.user.roles[i] === 'ROLE_ADMIN') this.role_admin = true
+                        }
+                    })
+            },
+            editUser: function (event) {
+                axios.put(`/admin/user/${this.id}`,{
+                    "userId": this.id,
+                    "username": this.username,
+                    "roleUser": this.nullCheck(this.role_user),
+                    "roleAdmin": this.nullCheck(this.role_admin)
+                })
+                    .then(response=>{
+                        this.editStatusResponse = response.data
+                        this.editStatus = this.editStatusResponse? 'Пользователь успешно изменен':'Не удалось изменить пользователя'
+                    })
+            },
+            nullCheck: function (cat){
+                if (cat === null || cat ===false) return ""
+                else return cat
+            }
+        }
+    })
+</script>
+<div style="margin-top: 60px;">&#160;</div>
+<footer class="footer text-center">
+    <div class="container">
+        <p class="text-muted" style="margin-top: 1.5%;">© 2021 Автосалон Credo. All Rights Reserved | Designed by Panchenkov Misha</p>
+    </div>
+</footer>
+</body>
+</html>

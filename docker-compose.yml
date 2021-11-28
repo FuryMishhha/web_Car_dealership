@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  web:
+    build: ./
+    container_name: web
+    restart: always
+    working_dir: /car_dealership
+    depends_on:
+      - app_db
+    volumes:
+      - ./:/car_dealership
+    command: mvn clean spring-boot:run
+    ports:
+      - 8008:8080
+  app_db:
+    container_name: mysql_car_dealership
+    hostname: app_db
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d
+      - sqlfiles:/var/lib/mysql
+    ports:
+      - 3306:3306
+volumes:
+  sqlfiles:

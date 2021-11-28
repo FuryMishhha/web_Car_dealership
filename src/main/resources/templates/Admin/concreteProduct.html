@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml"
+      xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <th:block th:include="general.html :: headerfiles"></th:block>
+    <title>Concrete Product</title>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.css">
+    <link rel="stylesheet" type="text/css" href="/css/style.css">
+</head>
+<body>
+<div class="section" id="app">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-xs-12">
+                <a href="/" id="plate" style="font-size: 27px;">Автосалон Credo</a>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="border-radius: 10px; border-top: 2px solid black; border-bottom: 2px solid black; border-left: 2px solid black; border-right: 2px solid black;">
+        <div class="row text-center">
+            <div class="col-xs-3" style="border-right: 2px solid black;">
+                <a href="/" style="font-size: 25px; color: orangered;">Главная страница</a>
+            </div>
+            <div class="col-xs-3" style="border-right: 2px solid black;">
+                <a href="/catalog" style="font-size: 25px; color: orangered;">Каталог</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="!isAuthenticated()" style="border-right: 2px solid black;">
+                <a href="/login" style="font-size: 25px; color: orangered;">Войти</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="!isAuthenticated()">
+                <a href="/registration" style="font-size: 25px; color: orangered;">Зарегистрироваться</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="isAuthenticated()" style="border-right: 2px solid black;">
+                <a href="/account" style="font-size: 25px; color: orangered;">Личный кабинет</a>
+            </div>
+            <div class="col-xs-3 dashboard_rules" sec:authorize="isAuthenticated()">
+                <a href="/logout" style="font-size: 25px; color: orangered;">Выйти</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-xs-6 col-xs-offset-3 dashboard_rules" sec:authorize="hasRole('ADMIN')" style="border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; border-bottom: 2px solid black; border-left: 2px solid black; border-right: 2px solid black;">
+                <a href="/admin" style="font-size: 25px; color: orangered; text-decoration: underline;">Окно администратора</a>
+            </div>
+        </div>
+    </div>
+    <div class="container" style="margin-top: 1.5%; border-radius: 10px; border-top: 2px solid black; border-bottom: 2px solid black; border-left: 2px solid black; border-right: 2px solid black;">
+        <div class="col-xs-12">
+            <h4 class="text-center" style="text-decoration: underline;">Изменение автомобиля</h4>
+            <h5 v-if="editStatus === true">Продукт успешно изменен</h5>
+            <h5 v-else-if="editStatus === false">Не удалось изменить продукт</h5><br>
+            <div class="col-xs-3">
+                <table class="table">
+                    <tr>
+                        <th>ID</th>
+                    </tr>
+                    <td>{{product.id}}</td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Тип</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <select v-model="selected">
+                                <option v-for="option in categories" v-bind:value="option">
+                                    {{option}}
+                                </option>
+                            </select>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Бренд</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="brand" name="brand" :placeholder="product.brand"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Модель</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="model" name="model" :placeholder="product.model"/>
+                        </label>
+                    </td>
+                </table>
+            </div>
+            <div class="col-xs-3">
+                <table class="table">
+                    <tr>
+                        <th>Год</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="number" v-model="release_year" name="release_year" :placeholder="product.release_year"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Кузов</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="body" name="body" :placeholder="product.body">
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Цвет</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="color" name="color" :placeholder="product.color"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" v-if="product.category==='support car'" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Пробег</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="number" v-model="mileage" name="mileage" :placeholder="product.mileage"/>
+                        </label>
+                    </td>
+                </table>
+            </div>
+            <div class="col-xs-3">
+                <table class="table">
+                    <tr>
+                        <th>Двигатель</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="engine" name="engine" :placeholder="product.engine"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Коробка</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="drive" name="drive" :placeholder="product.drive"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Руль</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="wheel" name="wheel" :placeholder="product.wheel"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;" v-if="product.category==='support car'">
+                    <tr>
+                        <th>Хозяева</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="number" v-model="number_of_owners" name="number_of_owners" :placeholder="product.number_of_owners"/>
+                        </label>
+                    </td>
+                </table>
+            </div>
+            <div class="col-xs-3">
+                <table class="table">
+                    <tr>
+                        <th>Цена</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="number" v-model="price" name="price" :placeholder="product.price"/>
+                        </label>
+                    </td>
+                </table>
+                <table class="table" style="margin-top: -6.5%;">
+                    <tr>
+                        <th>Картинка</th>
+                    </tr>
+                    <td>
+                        <label>
+                            <input type="text" v-model="picture" name="picture" :placeholder="product.picture"/>
+                        </label>
+                    </td>
+                </table>
+                <form v-on:submit.prevent="editProduct">
+                    <input type="submit" class="btn btn-warning" value="Edit">
+                </form>
+            </div>
+            <div class="col-xs-12">
+                <div class="text-center">
+                    <img :src="product.picture" style="width: 60%; height: 34%; border: 2px solid black; border-radius: 10px;">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.app = new Vue({
+        el: '#app',
+        data: {
+            body: '',
+            brand: '',
+            model: '',
+            mileage: null,
+            release_year: null,
+            color: '',
+            engine: '',
+            drive: '',
+            wheel: '',
+            number_of_owners: null,
+            editStatus: '',
+            name: '',
+            price: null,
+            picture: '',
+            selected: '',
+            img: '',
+            id: window.location.href.split("/").slice(-1)[0],
+            product: null,
+            categories: []
+        },
+        async mounted(){
+            await this.getCategories()
+            await this.getProduct()
+        },
+        methods: {
+            getProduct: function (event){
+                axios.get(`/admin/product/${this.id}`)
+                    .then(response=>{
+                        this.product = response.data
+                        this.selected = this.product.category
+                    })
+            },
+            getCategories: function (event) {
+                axios.get('/getProductsCategories')
+                    .then(response=>{
+                        this.categories = response.data
+                    })
+            },
+            editProduct: function (event) {
+                axios.put(`/admin/product/${this.id}`,{
+                    "price": this.price,
+                    "category": this.selected,
+                    "mileage": this.mileage,
+                    "number_of_owners": this.number_of_owners,
+                    "brand": this.brand,
+                    "model": this.model,
+                    "release_year": this.release_year,
+                    "body": this.body,
+                    "color": this.color,
+                    "engine": this.engine,
+                    "drive": this.drive,
+                    "wheel": this.wheel,
+                    "picture": this.picture,
+                    "productId": this.id
+                })
+                    .then(response=>{
+                        this.editStatus = response.data
+                    })
+            }
+        }
+    })
+</script>
+<div style="margin-top: 60px;">&#160;</div>
+<footer class="footer text-center">
+    <div class="container">
+        <p class="text-muted" style="margin-top: 1.5%;">© 2021 Автосалон Credo. All Rights Reserved | Designed by Panchenkov Misha</p>
+    </div>
+</footer>
+</body>
+</html>
